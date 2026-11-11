@@ -98,6 +98,37 @@ def login():
         flash("Incorrect email or password.")
     return render_template("auth.html", mode="login")
 
+
+@app.route("/register")
+def register():
+    return redirect(url_for("signup"))
+
+
+@app.route("/students")
+def students():
+    if not require_login():
+        return redirect(url_for("login"))
+    return redirect(url_for("home"))
+
+
+@app.route("/sms-status")
+def sms_status():
+    if not require_login():
+        return redirect(url_for("login"))
+
+    with conn() as c:
+        logs = c.execute("""
+            SELECT s.name, s.roll, cl.name AS classroom,
+                   l.day, l.status, l.detail
+            FROM sms_log l
+            JOIN students s ON s.id=l.student_id
+            JOIN classrooms cl ON cl.id=s.classroom_id
+            WHERE cl.teacher_id=?
+            ORDER BY l.day DESC, s.roll
+        """, (teacher_id(),)).fetchall()
+
+    return render_template("sms_status.html", logs=logs)
+
 @app.route("/logout")
 def logout():
     session.clear()
