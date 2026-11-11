@@ -1,1 +1,37 @@
-<!doctype html><html><head><meta name="viewport" content="width=device-width"><title>NEXORA</title><style>body{font-family:Arial;background:#101827;color:#eef2ff;margin:0;padding:30px}main{max-width:850px;margin:auto}.card{background:#1c2738;padding:20px;border-radius:14px;margin:14px 0}input,button{padding:10px;border-radius:8px;border:0;margin:5px}button{background:#6d8cff;color:white;cursor:pointer}a{color:#9db4ff}small{color:#aab5c8}</style></head><body><main><h1>NEXORA</h1><p>Welcome, {{teacher_name}} · <a href="{{url_for('logout')}}">Log out</a></p>{% with messages=get_flashed_messages() %}{% for m in messages %}<p>{{m}}</p>{% endfor %}{% endwith %}<section class="card"><h2>Create classroom</h2><form method="post" action="{{url_for('create_classroom')}}"><input name="name" placeholder="e.g. Class 10 A" required><button>Create</button></form></section><h2>Your classrooms</h2>{% for c in classrooms %}<section class="card"><h3>{{c.name}}</h3><a href="{{url_for('classroom',cid=c.id)}}">Open classroom →</a></section>{% else %}<p>No classrooms yet. Create your first one above.</p>{% endfor %}</main></body></html>
+
+{% extends "base.html" %}
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <small>TEACHER WORKSPACE</small>
+    <h2>Welcome back, <span>{{ teacher_name }}</span></h2>
+    <p>Create classrooms, manage students and track attendance.</p>
+</section>
+
+<section class="box">
+    <h3>Create a classroom</h3>
+    <form method="POST" action="{{ url_for('create_classroom') }}" class="add">
+        <input type="text" name="name" placeholder="Classroom name (e.g. Class 10 A)" required>
+        <button class="btn" type="submit">+ Create classroom</button>
+    </form>
+</section>
+
+<section class="box">
+    <h3>Your classrooms</h3>
+
+    {% if classrooms %}
+        {% for classroom in classrooms %}
+        <article class="box">
+            <h3>{{ classroom.name }}</h3>
+            <p class="note">Manage students and attendance for this classroom.</p>
+            <a class="btn" href="{{ url_for('classroom', cid=classroom.id) }}">
+                Open classroom →
+            </a>
+        </article>
+        {% endfor %}
+    {% else %}
+        <p class="note">No classrooms yet. Create your first classroom above.</p>
+    {% endif %}
+</section>
+{% endblock %}
