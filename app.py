@@ -135,6 +135,48 @@ def logout():
     flash("Logged out.")
     return redirect(url_for("login"))
 
+@app.route("/delete-account", methods=["POST"])
+def delete_account():
+    if not require_login():
+        return redirect(url_for("login"))
+
+    tid = teacher_id()
+
+    with conn() as c:
+        c.execute("""
+            DELETE FROM sms_log
+            WHERE student_id IN (
+                SELECT id FROM students
+                WHERE classroom_id IN (
+                    SELECT id FROM classrooms WHERE teacher_id=?
+                )
+            )
+        """, (tid,))
+
+        c.execute("""
+            DELETE FROM attendance
+            WHERE student_id IN (
+                SELECT id FROM students
+                WHERE classroom_id IN (
+                    SELECT id FROM classrooms WHERE teacher_id=?
+                )
+            )
+        """, (tid,))
+
+        c.execute("""
+            DELETE FROM students
+            WHERE classroom_id IN (
+                SELECT id FROM classrooms WHERE teacher_id=?
+            )
+        """, (tid,))
+
+        c.execute("DELETE FROM classrooms WHERE teacher_id=?", (tid,))
+        c.execute("DELETE FROM teachers WHERE id=?", (tid,))
+
+    session.clear()
+    flash("Your account has been permanently deleted.")
+    return redirect(url_for("signup"))
+
 @app.route("/classrooms", methods=["POST"])
 def create_classroom():
     if not require_login(): return redirect(url_for("login"))
