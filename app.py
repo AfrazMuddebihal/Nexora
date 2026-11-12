@@ -190,6 +190,42 @@ def create_classroom():
         flash("Classroom created.")
     return redirect(url_for("home"))
 
+@app.route("/classroom/<int:cid>/delete", methods=["POST"])
+def delete_classroom(cid):
+    if not require_login():
+        return redirect(url_for("login"))
+
+    tid = teacher_id()
+
+    with conn() as c:
+        classroom = c.execute(
+            "SELECT id FROM classrooms WHERE id=? AND teacher_id=?",
+            (cid, tid)
+        ).fetchone()
+
+        if not classroom:
+            return "Classroom not found", 404
+
+        c.execute("""
+            DELETE FROM sms_log
+            WHERE student_id IN (
+                SELECT id FROM students WHERE classroom_id=?
+            )
+        """, (cid,))
+
+        c.execute("""
+            DELETE FROM attendance
+            WHERE student_id IN (
+                SELECT id FROM students WHERE classroom_id=?
+            )
+        """, (cid,))
+
+        c.execute("DELETE FROM students WHERE classroom_id=?", (cid,))
+        c.execute("DELETE FROM classrooms WHERE id=?", (cid,))
+
+    flash("Classroom deleted successfully.")
+    return redirect(url_for("home"))
+
 @app.route("/classroom/<int:cid>")
 def classroom(cid):
     if not require_login(): return redirect(url_for("login"))
