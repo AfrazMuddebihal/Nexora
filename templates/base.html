@@ -24,7 +24,16 @@
         {% else %}
         <a href="/login">Login</a>
         {% endif %}
-    </nav>
+   
+{% if session.get('teacher_id') %}
+<form action="/delete-account" method="POST"
+      onsubmit="return confirm('Permanently delete your account and all your data?');">
+    <button type="submit" class="redbtn">
+        Delete Account
+    </button>
+</form>
+{% endif %}
+ </nav>
 
     <p class="foot">SCHOOL OPERATIONS • NEXORA</p>
 </aside>
