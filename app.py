@@ -259,6 +259,41 @@ def add_student(cid):
         except sqlite3.IntegrityError: flash("That roll number already exists in this classroom.")
     return redirect(url_for("classroom",cid=cid))
 
+@app.route("/classroom/<int:cid>/student/<int:sid>/delete",
+           methods=["POST"])
+def delete_student(cid, sid):
+    if not require_login():
+        return redirect(url_for("login"))
+
+    tid = teacher_id()
+
+    with conn() as c:
+        classroom = c.execute(
+            "SELECT id FROM classrooms WHERE id=? AND teacher_id=?",
+            (cid, tid)
+        ).fetchone()
+
+        if not classroom:
+            return "Classroom not found", 404
+
+        student = c.execute(
+            "SELECT id FROM students WHERE id=? AND classroom_id=?",
+            (sid, cid)
+        ).fetchone()
+
+        if not student:
+            return "Student not found", 404
+
+        c.execute("DELETE FROM sms_log WHERE student_id=?", (sid,))
+        c.execute("DELETE FROM attendance WHERE student_id=?", (sid,))
+        c.execute(
+            "DELETE FROM students WHERE id=? AND classroom_id=?",
+            (sid, cid)
+        )
+
+    flash("Student removed successfully.")
+    return redirect(url_for("classroom", cid=cid))
+
 @app.route("/classroom/<int:cid>/mark/<int:sid>/<status>",methods=["POST"])
 def mark(cid,sid,status):
     if not require_login(): return redirect(url_for("login"))
