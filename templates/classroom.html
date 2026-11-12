@@ -102,7 +102,14 @@
                         <input type="hidden" name="day" value="{{ day }}">
                         <button class="mini redbtn">A</button>
                     </form>
-                </td>
+                </td><td>
+<form class="inline" action="{{ url_for('delete_student', cid=cl.id, sid=s.id) }}"          method="POST"
+          onsubmit="return confirm('Remove this student permanently?');">
+        <button type="submit" class="redbtn mini">
+            Remove
+        </button>
+    </form>
+</td>
             </tr>
         {% endfor %}
         </tbody>
