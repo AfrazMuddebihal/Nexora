@@ -10,6 +10,14 @@
     <h2><span>{{ cl.name }}</span></h2>
     <p>Manage students, attendance and classroom performance.</p>
     <a class="btn ghost" href="{{ url_for('home') }}">← My classrooms</a>
+
+<form action="{{ url_for('delete_classroom', cid=cl.id) }}"
+      method="POST"
+      onsubmit="return confirm('Delete this classroom and all its data permanently?');">
+    <button type="submit" class="redbtn">
+        Delete Classroom
+    </button>
+</form>
 </section>
 
 <section class="box">
