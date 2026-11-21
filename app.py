@@ -46,11 +46,27 @@ init()
 def teacher_id():
     return session.get("teacher_id")
 
+
 def require_login():
-    if not teacher_id():
+    tid = teacher_id()
+
+    if not tid:
         flash("Please log in first.")
         return False
+
+    with conn() as c:
+        account = c.execute(
+            "SELECT id FROM teachers WHERE id=?",
+            (tid,)
+        ).fetchone()
+
+    if not account:
+        session.clear()
+        flash("This account has been deleted. Your session has ended.")
+        return False
+
     return True
+
 
 def owned_classroom(cid):
     with conn() as c:
